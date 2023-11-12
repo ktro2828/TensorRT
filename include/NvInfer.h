@@ -92,6 +92,7 @@ enum class LayerType : int32_t
     kSCATTER = 38,              //!< Scatter layer
     kEINSUM = 39,               //!< Einsum layer
     kASSERTION = 40,            //!< Assertion layer
+    kNON_ZERO = 41,              //!< NonZero layer
 };
 
 //!
@@ -5568,6 +5569,35 @@ protected:
     apiv::VAssertionLayer* mImpl;
 };
 
+//! \class INonZero
+//!
+//! \brief A NonZero layer in a network.
+//!
+//! This layer gets the positions of elements that are non-zero in the input.
+//! For boolean input, "non-zero" means "true". Semantics are similar to ONNX NonZero.
+//!
+//! The input may have type kFLOAT, kHALF, kINT32, or kBOOL.
+//!
+//! The output is a matrix of type kINT32.
+//! For an input with dimensions [L1, L2, ..., Lm], the output has dimensions [m,n],
+//! where n is the number of non-zero elements. I.e., each column denotes a m-D position.
+//!
+//! The columns are lexically ordered.
+//! E.g., a column with [3,2,4,7] precedes a column with [3,2,5,6].
+//!
+//! Tip: "compress" can be implemented with INonZero+IShuffle+Gather.
+//! For example, to compress a tensor x over axis k using mask vector v,
+//! use nonzero(v) to compute the subscripts, shuffle with reshape dimensions = [-1]
+//! to make the subscripts 1D, and then gather with the subscripts.
+//!
+class INonZeroLayer : public ILayer
+{
+protected:
+    virtual ~INonZeroLayer() noexcept = default;
+    apiv::VNonZeroLayer* mImpl;
+};
+
+
 //!
 //! \enum FillOperation
 //!
@@ -7205,6 +7235,20 @@ public:
     IAssertionLayer* addAssertion(ITensor& condition, char const* message) noexcept
     {
         return mImpl->addAssertion(condition, message);
+    }
+
+    //!
+    //! \brief Add a nonzero layer to the network.
+    //!
+    //! \param input The input tensor to the layer.
+    //!
+    //! \see INonZeroLayer
+    //!
+    //! \return The new nonzero layer, or nullptr if it could be created.
+    //!
+    INonZeroLayer* addNonZero(ITensor& input) noexcept
+    {
+        return mImpl->addNonZero(input);
     }
 
     //! \brief Add a fill layer to the network.

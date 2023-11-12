@@ -57,6 +57,7 @@ class ILoopOutputLayer;
 class ILRNLayer;
 class IMatrixMultiplyLayer;
 class INetworkDefinition;
+class INonZeroLayer;
 class IOptimizationProfile;
 class IPaddingLayer;
 class IParametricReLULayer;
@@ -780,6 +781,11 @@ public:
     virtual char const* getMessage() const noexcept = 0;
 };
 
+class VNonZeroLayer : public VRoot
+{
+public:
+};
+
 class VFillLayer : public VRoot
 {
 public:
@@ -904,6 +910,7 @@ public:
     virtual IScatterLayer* addScatter(ITensor& data, ITensor& indices, ITensor& updates, ScatterMode mode) noexcept = 0;
     virtual IEinsumLayer* addEinsum(ITensor* const* inputs, int32_t nbInputs, char const* equation) noexcept = 0;
     virtual IAssertionLayer* addAssertion(ITensor& condition, char const* message) noexcept = 0;
+    virtual INonZeroLayer* addNonZero(ITensor& input) noexcept = 0;
 };
 
 class VAlgorithmIOInfo : public VRoot
